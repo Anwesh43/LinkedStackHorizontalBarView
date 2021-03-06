@@ -31,3 +31,52 @@ fun Float.sinify() : Float = Math.sin(this * Math.PI).toFloat()
 fun Float.aboveScale(i : Int, n : Int) : Float = ((i + 1)..(n-1)).map {
     divideScale(it, n)
 }.reduce { a : Float, b : Float -> a + b }
+
+
+fun Canvas.drawStackHorizontalBars(i : Int, scale : Float, w : Float, h : Float, paint : Paint) {
+    val hGap : Float = (h - paint.strokeWidth) / bars
+    paint.textSize = hGap / 3
+    val sf : Float = scale.sinify()
+    for (j in 0..(bars - 1)) {
+        val sfj : Float = sf.divideScale(j, bars)
+        val sfjc : Float = sf.aboveScale(j, bars)
+        save()
+        translate(0f, (h - hGap * (1 + j)) * sfjc)
+        paint.color = colors[i]
+        paint.style = Paint.Style.FILL
+        drawRect(
+            RectF(
+                strokeFactor / 2,
+                0f,
+                strokeFactor / 2 + (w - strokeFactor) * sfj,
+                hGap
+            ),
+            paint
+        )
+        paint.color = backColor
+        drawText(
+            "${i + 1}",
+            w / 2 - paint.measureText("${i + 1}"),
+            hGap / 2 - paint.textSize / 2,
+            paint)
+        paint.style = Paint.Style.STROKE
+        drawRect(
+            RectF(
+                strokeFactor / 2,
+                0f,
+                strokeFactor / 2 + (w - strokeFactor) * sfj,
+                hGap
+            ),
+            paint
+        )
+        restore()
+    }
+}
+
+fun Canvas.drawSHBNode(i : Int, scale : Float, paint : Paint) {
+    val w : Float = width.toFloat()
+    val h : Float = height.toFloat()
+    paint.strokeCap = Paint.Cap.ROUND
+    paint.strokeWidth = Math.min(w, h) / strokeFactor
+    drawStackHorizontalBars(i, scale, w, h, paint)
+}
