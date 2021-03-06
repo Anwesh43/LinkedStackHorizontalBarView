@@ -1,0 +1,3 @@
+include ':stackhorizontalbarview'
+include ':app'
+rootProject.name = "LinkedStackHorizontalBarView"
