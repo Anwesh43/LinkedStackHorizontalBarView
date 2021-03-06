@@ -8,6 +8,7 @@ import android.graphics.RectF
 import android.graphics.Canvas
 import android.content.Context
 import android.app.Activity
+import android.util.Log
 
 val colors : Array<Int> = arrayOf(
     "#1abc9c",
@@ -18,7 +19,7 @@ val colors : Array<Int> = arrayOf(
 ).map {
     Color.parseColor(it)
 }.toTypedArray()
-val strokeFactor : Float = 0.02f
+val strokeFactor : Float = 90f
 val delay : Long = 20
 val backColor : Int = Color.parseColor("#BDBDBD")
 val bars : Int = 5
@@ -26,45 +27,51 @@ val scGap : Float = 0.02f / bars
 
 fun Int.inverse() : Float = 1f / this
 fun Float.maxScale(i : Int, n : Int) : Float = Math.max(0f, this - i * n.inverse())
-fun Float.divideScale(i : Int, n : Int) : Float = Math.min(n.inverse(), maxScale(i, n))
+fun Float.divideScale(i : Int, n : Int) : Float = Math.min(n.inverse(), maxScale(i, n)) * n
 fun Float.sinify() : Float = Math.sin(this * Math.PI).toFloat()
 fun Float.aboveScale(i : Int, n : Int) : Float = ((i + 1)..(n-1)).map {
-    divideScale(it, n)
-}.reduce { a : Float, b : Float -> a + b }
+    divideScale(it, n + 1).divideScale(0, 2)
+}.reduce( { a : Float, b : Float -> a + b }) / (n - 1 - i)
 
 
 fun Canvas.drawStackHorizontalBars(i : Int, scale : Float, w : Float, h : Float, paint : Paint) {
     val hGap : Float = (h - paint.strokeWidth) / bars
-    paint.textSize = hGap / 3
     val sf : Float = scale.sinify()
     for (j in 0..(bars - 1)) {
-        val sfj : Float = sf.divideScale(j, bars)
-        val sfjc : Float = sf.aboveScale(j, bars)
+        val sfj : Float = sf.divideScale(j, bars + 1)
+        val sfj1 : Float = sfj.divideScale(1, 2)
+        var sfjc : Float = 0f
+        if (j < bars - 1) {
+            sfjc = sf.aboveScale(j, bars)
+        }
+        Log.d("for j :$j sfjc is", "${hGap}, $h, $j")
         save()
         translate(0f, (h - hGap * (1 + j)) * sfjc)
+        paint.textSize = (hGap / 3) * sfj1
         paint.color = colors[i]
         paint.style = Paint.Style.FILL
         drawRect(
             RectF(
-                strokeFactor / 2,
+                paint.strokeWidth / 2,
                 0f,
-                strokeFactor / 2 + (w - strokeFactor) * sfj,
+                paint.strokeWidth / 2 + (w - paint.strokeWidth) * sfj1,
                 hGap
             ),
             paint
         )
         paint.color = backColor
         drawText(
-            "${i + 1}",
+            "${j + 1}",
             w / 2 - paint.measureText("${i + 1}"),
             hGap / 2 - paint.textSize / 2,
-            paint)
+            paint
+        )
         paint.style = Paint.Style.STROKE
         drawRect(
             RectF(
-                strokeFactor / 2,
+                paint.strokeWidth / 2,
                 0f,
-                strokeFactor / 2 + (w - strokeFactor) * sfj,
+                paint.strokeWidth / 2 + (w - paint.strokeWidth) * sfj1,
                 hGap
             ),
             paint
