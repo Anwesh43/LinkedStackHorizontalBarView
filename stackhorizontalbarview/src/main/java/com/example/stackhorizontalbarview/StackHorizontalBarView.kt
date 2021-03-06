@@ -208,4 +208,27 @@ class StackHorizontalBarView(ctx : Context) : View(ctx) {
             curr.startUpdating(cb)
         }
     }
+
+    data class Renderer(var view : StackHorizontalBarView) {
+
+        private val animator : Animator = Animator(view)
+        private val shb : StackHorizontalBar = StackHorizontalBar(0)
+        private val paint : Paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+        fun render(canvas : Canvas) {
+            canvas.drawColor(backColor)
+            shb.draw(canvas, paint)
+            animator.animate {
+                shb.update {
+                    animator.stop()
+                }
+            }
+        }
+
+        fun handleTap() {
+            shb.startUpdating {
+                animator.start()
+            }
+        }
+    }
 }
