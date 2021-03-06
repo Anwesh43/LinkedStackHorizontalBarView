@@ -233,4 +233,13 @@ class StackHorizontalBarView(ctx : Context) : View(ctx) {
             }
         }
     }
+
+    companion object {
+
+        fun create(activity : Activity) : StackHorizontalBarView {
+            val view : StackHorizontalBarView = StackHorizontalBarView(activity)
+            activity.setContentView(view)
+            return view
+        }
+    }
 }
